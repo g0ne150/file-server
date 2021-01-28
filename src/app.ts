@@ -3,24 +3,24 @@ import { port } from "./config"
 import Koa from "koa"
 import staticServe from "koa-static"
 
-const app = new Koa();
+const app = new Koa()
 
-// 简单错误处理
+// Simple error handlingd
 app.use(async (ctx, next) => {
     try {
-        await next();
+        await next()
     } catch (e) {
         console.error(`error: `, e)
         if (e instanceof Error) {
             ctx.body = {
                 code: 500,
-                msg: e.message
-            };
+                msg: e.message,
+            }
         }
     }
 })
 
-// 静态资源
+// serve for static resources
 app.use(staticServe(`${__dirname}/../public`))
 
 app.listen(port, () => {

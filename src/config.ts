@@ -1,9 +1,5 @@
 export const port = 8080
 
-export const db = {
-    url: "",
-    user: "",
-    password: ""
-}
+export const sqliteDataBaseFilePath = `${__dirname}/../sql/file-server.db`
 
 export const fileStoragePath = ""

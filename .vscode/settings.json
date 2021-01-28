@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "file-server",
+            "database": "${workspaceFolder:wiki}/sql/file-server.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

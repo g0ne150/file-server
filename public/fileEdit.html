@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>File edit - file server</title>
+    </head>
+    <body>
+        <h1>Edit file: <span>{file name}</span></h1>
+        <form action="/api/file/edit" method="POST" title="New file">
+            <label for="file-content">File content:</label>
+            <textarea name="file-content" id="file-content" disabled></textarea>
+            <br />
+            <strong>
+                This file will be unlock after <span>{30}</span> seconds
+            </strong>
+            <br />
+            <input type="submit" value="Save" />
+        </form>
+    </body>
+</html>

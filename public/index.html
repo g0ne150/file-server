@@ -6,14 +6,15 @@
         <title>New file - file server</title>
     </head>
     <body>
-        <form action="/api/file" method="POST">
-            <label for="fileName">File name:</label>
-            <input type="text" name="fileName" id="fileName" />
+        <h1>Add a new file</h1>
+        <form action="/api/file/add" method="POST" title="New file">
+            <label for="file-name">File name:</label>
+            <input type="text" name="file-name" id="file-name" />
             <br />
-            <label for="">File content:</label>
-            <textarea name="fileContent" id="fileContent"></textarea>
+            <label for="file-content">File content:</label>
+            <textarea name="file-content" id="file-content"></textarea>
             <br />
-            <input type="submit" value="Submit" />
+            <input type="submit" value="Save" />
         </form>
     </body>
 </html>

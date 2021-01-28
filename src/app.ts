@@ -1,10 +1,11 @@
+import { port } from "./config"
+
 import Koa from "koa"
 import staticServe from "koa-static"
 
-
 const app = new Koa();
 
-// 错误处理
+// 简单错误处理
 app.use(async (ctx, next) => {
     try {
         await next();
@@ -22,6 +23,6 @@ app.use(async (ctx, next) => {
 // 静态资源
 app.use(staticServe(`${__dirname}/../public`))
 
-app.listen(8080, () => {
-    console.log("Server is running: http://localhost:8080")
+app.listen(port, () => {
+    console.log(`Server is running: http://localhost:${port}`)
 })

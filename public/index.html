@@ -3,9 +3,17 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>file server</title>
+        <title>New file - file server</title>
     </head>
     <body>
-        <h1>Welcome file server</h1>
+        <form action="/api/file" method="POST">
+            <label for="fileName">File name:</label>
+            <input type="text" name="fileName" id="fileName" />
+            <br />
+            <label for="">File content:</label>
+            <textarea name="fileContent" id="fileContent"></textarea>
+            <br />
+            <input type="submit" value="Submit" />
+        </form>
     </body>
 </html>

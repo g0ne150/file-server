@@ -14,6 +14,12 @@ class FileService {
         await fileDAO.addFile(fileName)
     }
 
+    /**
+     * Save file content when file is editable
+     * @param fileId File ID
+     * @param content File content
+     * @param currentUserToken current user token
+     */
     async saveFile(fileId: number, content: string, currentUserToken: string) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
@@ -21,7 +27,7 @@ class FileService {
             this.isFileLocked(fileDO, now) &&
             !this.isLockedBy(fileDO, currentUserToken)
         ) {
-            // file is locked by other user
+            // file is locked by another user
             throw new Error(`File is locked for now`)
         }
         // TODO 更新本地文件内容
@@ -46,54 +52,73 @@ class FileService {
     }
 
     /**
-     * Try lock file (try edit file) for reentrant
+     * try edit file
      * @param fileId File ID
      * @param currentUserToken lock token
      */
-    async tryLockFile(fileId: number, currentUserToken: string) {
-        const fileDO = await this.queryFile(fileId)
+    async tryEditFile(fileId: number, currentUserToken: string) {
+        let fileDO = await this.queryFile(fileId)
         const now = Date.now()
-        let fileDTO: EditFileDTO = { ...fileDO }
+
+        // Try lock
+        fileDO = await this.tryLockFile(fileDO, now, currentUserToken)
+        const fileDTO: EditFileDTO = { ...fileDO }
 
         // TODO 读取本地文件
+        // Read file content from locl file
         fileDTO.content = ""
 
-        // when file is unlocked
-        if (!this.isFileLocked(fileDO, now)) {
-            const lockedFile = await this.lockFile(
-                fileId,
-                now,
-                currentUserToken
-            )
-            fileDTO = { ...fileDTO, ...lockedFile }
-        }
+        // Confirm if the file is editable or not
+        fileDTO.isEditable = this.isFileEditable(fileDO, now, currentUserToken)
 
-        // Confirm is this file editable
-        if (this.isLockedBy(fileDO, currentUserToken)) {
-            fileDTO.isEditable = true
-        } else {
-            fileDTO.isEditable = false
-        }
-
-        if (fileDTO.latestLockTime) {
-            fileDTO.lockDuration = this.calculateLockDuration(
-                fileDTO.latestLockTime,
-                now
-            )
-        }
+        // Set lock duration
+        fileDTO.lockDuration = this.calculateLockDuration(
+            fileDTO.latestLockTime,
+            now
+        )
 
         return fileDTO
     }
 
     /**
-     * Try update file's latest_lock_time and latest_lock_token to lock file
+     * Try update file's latest_lock_time and latest_lock_token to lock file.
+     *
+     * Only success when file is unlocked.
+     *
+     * Reentrancy.
      * @param fileId File ID
      * @param now milliseconds for current time
      * @param lockToken Lock token
      */
-    async lockFile(fileId: number, now: number, lockToken: string) {
-        await fileDAO.updateLockInfo(fileId, now, lockToken)
-        return await this.queryFile(fileId)
+    async tryLockFile(fileDO: FileDO, now: number, lockToken: string) {
+        if (this.isFileLocked(fileDO, now)) {
+            return fileDO
+        }
+        await fileDAO.updateLockInfo(fileDO.id, now, lockToken)
+        fileDO.latestLockTime = now
+        fileDO.latestLockToken = lockToken
+        return fileDO
+    }
+
+    /**
+     *  File is uneditable only if the file is locked by another user
+     * @param file File data object
+     * @param now Current time, milliseconds
+     * @param currentUserToken Current user token
+     */
+    private isFileEditable(
+        file: FileDO,
+        now: number,
+        currentUserToken: string
+    ) {
+        if (
+            this.isFileLocked(file, now) &&
+            !this.isLockedBy(file, currentUserToken)
+        ) {
+            return false
+        } else {
+            return true
+        }
     }
 
     // Calculate for lock duration
@@ -104,7 +129,7 @@ class FileService {
         return now + LOCK_DURATION - latestLockTime
     }
 
-    private isLockedBy(file: FileDO, token: string) {
+    private isLockedBy(file: FileDO, token: string | null) {
         if (file.latestLockToken === token) {
             return true
         } else {
@@ -112,8 +137,11 @@ class FileService {
         }
     }
 
-    private isFileLocked(file: FileDO, now: number) {
-        if (file.latestLockTime && now - file.latestLockTime <= LOCK_DURATION) {
+    private isFileLocked(fileDO: FileDO, now: number) {
+        if (
+            fileDO.latestLockTime &&
+            now - fileDO.latestLockTime <= LOCK_DURATION
+        ) {
             return true
         } else {
             return false

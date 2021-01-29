@@ -23,10 +23,7 @@ class FileService {
     async saveFile(fileId: number, content: string, currentUserToken: string) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
-        if (
-            this.isFileLocked(fileDO, now) &&
-            !this.isLockedBy(fileDO, currentUserToken)
-        ) {
+        if (!this.isFileEditable(fileDO, now, currentUserToken)) {
             // file is locked by another user
             throw new Error(`File is locked for now`)
         }

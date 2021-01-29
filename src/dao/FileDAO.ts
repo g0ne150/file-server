@@ -25,7 +25,7 @@ class FileDAO {
      */
     async newFile(fileName: string) {
         const conn = await getConnection()
-        await conn.run(`insert into file (file_name) values (${fileName});`)
+        await conn.run(`insert into file (file_name) values (?);`, fileName)
     }
 
     /**
@@ -35,21 +35,32 @@ class FileDAO {
      */
     async queryFiles(fileIds?: number[]): Promise<FileDO[]> {
         const conn = await getConnection()
-        const fileResults = await conn.all(
-            `select * from file ${
-                fileIds ? `where id in ( ${fileIds.join(", ")} )` : ``
-            };`
-        )
+        let fileResults = []
+        if (fileIds && fileIds.length > 0) {
+            fileResults = await conn.all(
+                `select * from file where id in ( ${fileIds
+                    .map(() => "?")
+                    .join(", ")} );`,
+                fileIds
+            )
+        } else {
+            fileResults = await conn.all(`select * from file`)
+        }
         return fileResults.map(this.mapToDO)
     }
 
     /**
-     * update a file data by it's id
-     * @param file file id and it's data for updating
+     * Update file's latest_lock_time and latest_lock_token to lock
+     * @param file File id and it's data for updating
      */
-    async updateFileById(file: FileDO) {
+    async lockFileById(file: FileDO) {
         const conn = await getConnection()
-        // conn.run(`update file set `)
+        conn.run(
+            `update file set latest_lock_time = ?, latest_lock_token = ? where id = ?`,
+            file.latestLockTime,
+            file.latestLockToken,
+            file.id
+        )
     }
 
     /**

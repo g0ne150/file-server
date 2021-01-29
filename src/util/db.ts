@@ -20,10 +20,24 @@ export const getConnection = async () => {
     return conn
 }
 
-export const Field = function (field: string) {
-    return function (
-        target: any,
-        propertyKey: string,
-        descriptor: PropertyDescriptor
-    ) {}
+const DB_FIELD_METADATA_KEY = Symbol("db-field-key")
+
+/**
+ * Annotation which indictes the database tables field key on Data Objects
+ * @param dbField Field key in database
+ */
+export const Field = function (dbField: string) {
+    return Reflect.metadata(DB_FIELD_METADATA_KEY, dbField)
+}
+
+export function mapToDO<T>(targetDO: T, dataFromDb: any): T {
+    for (let k in targetDO) {
+        const dbPropertyKey = Reflect.getMetadata(
+            DB_FIELD_METADATA_KEY,
+            targetDO,
+            k
+        )
+        targetDO[k] = dataFromDb[dbPropertyKey]
+    }
+    return targetDO
 }

@@ -1,4 +1,5 @@
 import { port } from "./config"
+import "reflect-metadata"
 
 import Koa from "koa"
 import staticServe from "koa-static"

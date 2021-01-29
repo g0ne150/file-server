@@ -1,20 +1,29 @@
-import { getConnection } from "../util/db"
+import { Field, getConnection, mapToDO } from "../util/db"
 
 export class FileDO {
     /**
-     * FileDO construtor
-     *
-     * @param id file ID
-     * @param fileName file name
-     * @param latestLockTime latest lock time, milliseconds
-     * @param latestLockToken latest lock token
+     * file ID
      */
-    constructor(
-        public id: number,
-        public fileName: string,
-        public latestLockTime?: number,
-        public latestLockToken?: string
-    ) {}
+    @Field("id")
+    public id: number = 0
+
+    /**
+     * file name
+     */
+    @Field("file_name")
+    public fileName: string = ""
+
+    /**
+     * latest lock time, milliseconds
+     */
+    @Field("latest_lock_time")
+    public latestLockTime: number | null = null
+
+    /**
+     * latest lock token
+     */
+    @Field("latest_lock_token")
+    public latestLockToken: string | null = null
 }
 
 class FileDAO {
@@ -46,7 +55,9 @@ class FileDAO {
         } else {
             fileResults = await conn.all(`select * from file`)
         }
-        return fileResults.map(this.mapToDO)
+        return fileResults.map((dataFromDb) =>
+            mapToDO(new FileDO(), dataFromDb)
+        )
     }
 
     /**
@@ -61,15 +72,6 @@ class FileDAO {
             file.latestLockToken,
             file.id
         )
-    }
-
-    /**
-     * map data to FileDO
-     *
-     */
-    //TODO 改成装饰器实现
-    private mapToDO(files: any): FileDO {
-        return new FileDO(123, "123.tet")
     }
 }
 

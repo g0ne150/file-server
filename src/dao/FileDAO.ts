@@ -5,9 +5,9 @@ class FileDAO {
     /**
      * insert file data to db
      *
-     * @param fileName file name ()
+     * @param fileName file name (assume unique)
      */
-    async newFile(fileName: string) {
+    async addFile(fileName: string) {
         const conn = await getConnection()
         await conn.run(`insert into file (file_name) values (?);`, fileName)
     }
@@ -39,13 +39,18 @@ class FileDAO {
      * Update file's latest_lock_time and latest_lock_token to lock
      * @param file File id and it's data for updating
      */
-    async lockFileById(file: FileDO) {
+    async updateLockInfo(fileId: number, lockTime: number, lockToken: string) {
         const conn = await getConnection()
+        if (!fileId || !lockTime || !lockToken) {
+            throw new Error(
+                "file id or file latestLockTime or latestLockToken cannot be falsy value"
+            )
+        }
         conn.run(
             `update file set latest_lock_time = ?, latest_lock_token = ? where id = ?`,
-            file.latestLockTime,
-            file.latestLockToken,
-            file.id
+            lockTime,
+            lockToken,
+            fileId
         )
     }
 }

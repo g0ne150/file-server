@@ -12,3 +12,8 @@ export const SQLITE3_DATABASE_FILE_PATH = `${__dirname}/../sql/file-server.db`
  * Upload file storage localtion
  */
 export const FILE_STORAGE_PATH = ""
+
+/**
+ * File lock duration, milliseconds
+ */
+export const LOCK_DURATION = 60 * 1000

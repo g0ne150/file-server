@@ -1,4 +1,4 @@
-import { port } from "./config"
+import { PORT } from "./config"
 import "reflect-metadata"
 
 import Koa from "koa"
@@ -13,6 +13,7 @@ app.use(async (ctx, next) => {
     } catch (e) {
         console.error(`error: `, e)
         if (e instanceof Error) {
+            ctx.status = 500
             ctx.body = {
                 code: 500,
                 msg: e.message,
@@ -24,6 +25,6 @@ app.use(async (ctx, next) => {
 // serve for static resources
 app.use(staticServe(`${__dirname}/../public`))
 
-app.listen(port, () => {
-    console.log(`Server is running: http://localhost:${port}`)
+app.listen(PORT, () => {
+    console.log(`Server is running: http://localhost:${PORT}`)
 })

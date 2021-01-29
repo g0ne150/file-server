@@ -1,7 +1,7 @@
 import { LOCK_DURATION } from "../config"
 import FileDO from "../dao/do/FileDO"
 import { fileDAO } from "../dao/FileDAO"
-import TryEditFileDTO from "./dto/TryEditFileDTO"
+import EditFileDTO from "./dto/TryEditFileDTO"
 
 class FileService {
     /**
@@ -12,6 +12,19 @@ class FileService {
         // TODO 创建文件到本地
 
         await fileDAO.addFile(fileName)
+    }
+
+    async saveFile(fileId: number, content: string, currentUserToken: string) {
+        const fileDO = await this.queryFile(fileId)
+        const now = Date.now()
+        if (
+            this.isFileLocked(fileDO, now) &&
+            !this.isLockedBy(fileDO, currentUserToken)
+        ) {
+            // file is locked by other user
+            throw new Error(`File is locked for now`)
+        }
+        // TODO 更新本地文件内容
     }
 
     /**
@@ -33,14 +46,14 @@ class FileService {
     }
 
     /**
-     * Try lock file (try edit file)
+     * Try lock file (try edit file) for reentrant
      * @param fileId File ID
      * @param currentUserToken lock token
      */
     async tryLockFile(fileId: number, currentUserToken: string) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
-        let fileDTO: TryEditFileDTO = { ...fileDO }
+        let fileDTO: EditFileDTO = { ...fileDO }
 
         // TODO 读取本地文件
         fileDTO.content = ""
@@ -55,6 +68,7 @@ class FileService {
             fileDTO = { ...fileDTO, ...lockedFile }
         }
 
+        // Confirm is this file editable
         if (this.isLockedBy(fileDO, currentUserToken)) {
             fileDTO.isEditable = true
         } else {
@@ -62,7 +76,10 @@ class FileService {
         }
 
         if (fileDTO.latestLockTime) {
-            fileDTO.lockDuration = now + LOCK_DURATION - fileDTO.latestLockTime
+            fileDTO.lockDuration = this.calculateLockDuration(
+                fileDTO.latestLockTime,
+                now
+            )
         }
 
         return fileDTO
@@ -77,6 +94,14 @@ class FileService {
     async lockFile(fileId: number, now: number, lockToken: string) {
         await fileDAO.updateLockInfo(fileId, now, lockToken)
         return await this.queryFile(fileId)
+    }
+
+    // Calculate for lock duration
+    private calculateLockDuration(latestLockTime: number | null, now: number) {
+        if (latestLockTime === null) {
+            return
+        }
+        return now + LOCK_DURATION - latestLockTime
     }
 
     private isLockedBy(file: FileDO, token: string) {

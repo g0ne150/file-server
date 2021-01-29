@@ -1,6 +1,6 @@
 import FileDO from "../../dao/do/FileDO"
 
-export default class TryEditFileDTO extends FileDO {
+export default class EditFileDTO extends FileDO {
     /**
      * File content, could be empty
      */

@@ -1,5 +1,7 @@
 ## 编辑锁实现思路
 
+实现于 [FileService.ts](./src/service/FileService.ts)
+
 -   当进入编辑页面时，检查当前时间和 latest lock time 差是否大于 60 秒，**如果大于**，则未锁定，可编辑；
     -   被编辑文件的 latest lock time 设置为当前时间，同时生成一个编辑会话 token 并写入数据库；
     -   用 cookie 返回一个 60 秒过期的，上一步骤生成编辑会话 token 标识当前编辑会话；

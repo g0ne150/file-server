@@ -1,10 +1,16 @@
-import { PORT } from "./config"
 import "reflect-metadata"
-
+import path from "path"
 import Koa from "koa"
-import staticServe from "koa-static"
+import render from "koa-ejs"
+import { PORT } from "./config"
+import fileController from "./controller/FileController"
 
 const app = new Koa()
+
+render(app, {
+    root: path.join(__dirname, "view"),
+    debug: true,
+})
 
 // Simple error handlingd
 app.use(async (ctx, next) => {
@@ -22,9 +28,8 @@ app.use(async (ctx, next) => {
     }
 })
 
-// serve for static resources
-app.use(staticServe(`${__dirname}/../public`))
-
 app.listen(PORT, () => {
     console.log(`Server is running: http://localhost:${PORT}`)
 })
+
+app.use(fileController.routes()).use(fileController.allowedMethods())

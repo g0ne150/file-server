@@ -1,0 +1,27 @@
+<table border="1px">
+    <caption>
+        File list view
+    </caption>
+    <thead>
+        <tr>
+            <th id="file-name">File name</th>
+            <th id="operation">operation</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% fileList.forEach(file => { %>
+        <tr>
+            <td headers="file-name">
+                <a href="/api/file/download?id=12312"><%= file.fileName %> </a>
+            </td>
+            <td headers="operation">
+                <input
+                    type="button"
+                    value="Edit"
+                    onclick="javascript: location.href = `/file/edit?id=<%= file.id %>`"
+                />
+            </td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>

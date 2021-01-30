@@ -1,7 +1,5 @@
-import { LOCK_DURATION } from "../config"
-import FileDO from "../dao/do/FileDO"
 import { fileDAO } from "../dao/FileDAO"
-import EditFileDTO from "./dto/TryEditFileDTO"
+import EditFileDTO from "./dto/EditFileDTO"
 
 class FileService {
     /**
@@ -20,10 +18,10 @@ class FileService {
      * @param content File content
      * @param currentUserToken current user token
      */
-    async saveFile(fileId: number, content: string, currentUserToken: string) {
+    async saveFile(fileId: number, currentUserToken: string) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
-        if (!this.isFileEditable(fileDO, now, currentUserToken)) {
+        if (!EditFileDTO.getIsEditable(fileDO, now, currentUserToken)) {
             // file is locked by another user
             throw new Error(`File is locked for now`)
         }
@@ -54,11 +52,10 @@ class FileService {
      * @param currentUserToken lock token
      */
     async tryEditFile(fileId: number, currentUserToken: string) {
-        let fileDO = await this.queryFile(fileId)
         const now = Date.now()
 
         // Try lock
-        fileDO = await this.tryLockFile(fileDO, now, currentUserToken)
+        const fileDO = await this.tryLockFile(fileId, currentUserToken, now)
         const fileDTO: EditFileDTO = { ...fileDO }
 
         // TODO 读取本地文件
@@ -66,13 +63,14 @@ class FileService {
         fileDTO.content = ""
 
         // Confirm if the file is editable or not
-        fileDTO.isEditable = this.isFileEditable(fileDO, now, currentUserToken)
+        fileDTO.isEditable = EditFileDTO.getIsEditable(
+            fileDTO,
+            now,
+            currentUserToken
+        )
 
         // Set lock duration
-        fileDTO.lockDuration = this.calculateLockDuration(
-            fileDTO.latestLockTime,
-            now
-        )
+        fileDTO.lockDuration = EditFileDTO.getLockDuration(fileDTO, now)
 
         return fileDTO
     }
@@ -80,69 +78,26 @@ class FileService {
     /**
      * Try update file's latest_lock_time and latest_lock_token to lock file.
      *
-     * Only success when file is unlocked.
+     * Only lock successfully when file is unlocked.
      *
-     * Reentrancy.
+     * Reentrant.
      * @param fileId File ID
-     * @param now milliseconds for current time
      * @param lockToken Lock token
+     * @param now milliseconds for current time
      */
-    async tryLockFile(fileDO: FileDO, now: number, lockToken: string) {
-        if (this.isFileLocked(fileDO, now)) {
+    async tryLockFile(
+        fileId: number,
+        lockToken: string,
+        now: number = Date.now()
+    ) {
+        let fileDO = await this.queryFile(fileId)
+        if (EditFileDTO.getIsFileLocked(fileDO, now)) {
             return fileDO
         }
         await fileDAO.updateLockInfo(fileDO.id, now, lockToken)
         fileDO.latestLockTime = now
         fileDO.latestLockToken = lockToken
         return fileDO
-    }
-
-    /**
-     *  File is uneditable only if the file is locked by another user
-     * @param file File data object
-     * @param now Current time, milliseconds
-     * @param currentUserToken Current user token
-     */
-    private isFileEditable(
-        file: FileDO,
-        now: number,
-        currentUserToken: string
-    ) {
-        if (
-            this.isFileLocked(file, now) &&
-            !this.isLockedBy(file, currentUserToken)
-        ) {
-            return false
-        } else {
-            return true
-        }
-    }
-
-    // Calculate for lock duration
-    private calculateLockDuration(latestLockTime: number | null, now: number) {
-        if (latestLockTime === null) {
-            return
-        }
-        return now + LOCK_DURATION - latestLockTime
-    }
-
-    private isLockedBy(file: FileDO, token: string | null) {
-        if (file.latestLockToken === token) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    private isFileLocked(fileDO: FileDO, now: number) {
-        if (
-            fileDO.latestLockTime &&
-            now - fileDO.latestLockTime <= LOCK_DURATION
-        ) {
-            return true
-        } else {
-            return false
-        }
     }
 }
 

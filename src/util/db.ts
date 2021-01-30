@@ -34,7 +34,7 @@ export const Field = function (dbField: string) {
 /**
  * Convert data to Data Object
  * @param targetDO target Data Object
- * @param dataFromDb Data object from database connection
+ * @param dataFromDb Data from database connection
  */
 export const mapToDO = function mapToDO<T>(targetDO: T, dataFromDb: any): T {
     for (let k in targetDO) {
@@ -43,7 +43,9 @@ export const mapToDO = function mapToDO<T>(targetDO: T, dataFromDb: any): T {
             targetDO,
             k
         )
-        targetDO[k] = dataFromDb[dbPropertyKey]
+        if (dataFromDb[dbPropertyKey] !== undefined) {
+            targetDO[k] = dataFromDb[dbPropertyKey]
+        }
     }
     return targetDO
 }

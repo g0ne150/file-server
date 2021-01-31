@@ -14,6 +14,11 @@ const applyController = (controller: Router) => {
 
 const app = new Koa()
 
+// Simple error handling
+app.on("error", (err) => {
+    console.error("server error", err)
+})
+
 render(app, {
     root: path.join(__dirname, "view"),
 })

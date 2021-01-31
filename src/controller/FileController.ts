@@ -8,7 +8,9 @@ fileController.get("/new", async (ctx) => {
     await ctx.render("index")
 })
 
-fileController.post("/new/save", async (ctx) => {})
+fileController.post("/new/save", async (ctx) => {
+    console.log(ctx.request)
+})
 
 fileController.get("/download/:fileId", async (ctx) => {
     const fileId = parseInt(ctx.params["fileId"])

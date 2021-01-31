@@ -1,9 +1,9 @@
 import Router from "@koa/router"
 
-const IndexController = new Router()
+const indexController = new Router()
 
-IndexController.get("/", (ctx) => {
+indexController.get("/", (ctx) => {
     ctx.redirect("/file/new")
 })
 
-export default IndexController
+export default indexController

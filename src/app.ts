@@ -3,8 +3,9 @@ import path from "path"
 import Koa from "koa"
 import render from "koa-ejs"
 import { PORT } from "./config"
+import Router from "@koa/router"
+import indexController from "./controller/IndexController"
 import fileController from "./controller/FileController"
-import IndexController from "./controller/IndexController"
 
 const app = new Koa()
 
@@ -32,5 +33,9 @@ app.listen(PORT, () => {
     console.log(`Server is running: http://localhost:${PORT}`)
 })
 
-app.use(IndexController.routes()).use(IndexController.allowedMethods())
-app.use(fileController.routes()).use(fileController.allowedMethods())
+const applyController = (controller: Router) => {
+    app.use(controller.routes()).use(controller.allowedMethods())
+}
+
+applyController(indexController)
+applyController(fileController)

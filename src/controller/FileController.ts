@@ -1,14 +1,28 @@
 import Router from "@koa/router"
 import { fileService } from "../service/FileService"
 
-const fileController = new Router()
+const fileController = new Router({ prefix: "/file" })
 
-fileController.get("/", async (ctx) => {
+fileController.get("/new", async (ctx) => {
     ctx.state.title = "New file"
     await ctx.render("index")
 })
 
-fileController.get("/file/list", async (ctx) => {
+fileController.get("/download/:fileId", async (ctx) => {
+    const fileId = parseInt(ctx.params["fileId"])
+    const file = await fileService.queryFile(fileId)
+    if (file === undefined || file === null) {
+        throw new Error("Target file not found")
+    }
+    ctx.set({
+        "Content-Type": "text/plain",
+        "Content-Disposition": `attachment; filename="${file.fileName}"`,
+    })
+    // TODO 从本地文件读取文件内容
+    ctx.body = "file content"
+})
+
+fileController.get("/list", async (ctx) => {
     ctx.state = {
         title: "File list",
         fileList: await fileService.queryAllFiles(),

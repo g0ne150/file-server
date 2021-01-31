@@ -4,12 +4,12 @@ import Koa from "koa"
 import render from "koa-ejs"
 import { PORT } from "./config"
 import fileController from "./controller/FileController"
+import IndexController from "./controller/IndexController"
 
 const app = new Koa()
 
 render(app, {
     root: path.join(__dirname, "view"),
-    debug: true,
 })
 
 // Simple error handlingd
@@ -32,4 +32,5 @@ app.listen(PORT, () => {
     console.log(`Server is running: http://localhost:${PORT}`)
 })
 
+app.use(IndexController.routes()).use(IndexController.allowedMethods())
 app.use(fileController.routes()).use(fileController.allowedMethods())

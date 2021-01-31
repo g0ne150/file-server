@@ -12,7 +12,9 @@
         <% fileList.forEach(file => { %>
         <tr>
             <td headers="file-name">
-                <a href="/api/file/download?id=12312"><%= file.fileName %> </a>
+                <a href="/file/download/<%= file.id %>"
+                    ><%= file.fileName %>
+                </a>
             </td>
             <td headers="operation">
                 <input

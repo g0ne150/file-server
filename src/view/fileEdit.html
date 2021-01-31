@@ -2,46 +2,45 @@
 <form action="/file/edit/udpate/<%= file.id %>" method="POST" title="New file">
     <label for="file-content">File content:</label>
     <textarea
-        name="file-content" id="file-content"
-        disabled="<%= !file.isEditable %>" ><%= file.content %></textarea>
+        name="file-content" id="file-content" disabled><%= file.content %></textarea>
     <br />
-    <% if (!file.isEditable) { %>
     <strong id="lock-text"> This file will be unlock after <span id="lock-duration"><%= (file.lockDuration / 1000).toFixed(0) %></span> seconds </strong>
-    <% } %>
     <br />
-    <% if (file.isEditable) { %>
-        <input type="submit" value="Save" />
-    <% } %>
+    <input id="edit-submit-btn" type="submit" value="Save" disabled />
 </form>
 
-
-<% if (!file.isEditable) { %>
-    <script>
-        function init() {
-            startCountDown()
+<script>
+    function startCountDown() {
+        const countDownEl = document.querySelector("#lock-duration")
+        if (!countDownEl) {
+            return
         }
-
-        function startCountDown() {
-            const countDownEl = document.querySelector("#lock-duration")
-            if (!countDownEl) {
+        let lockDuration = parseInt(countDownEl.innerText)
+        const counter = setInterval(() => {
+            if (lockDuration <= 0){
+                clearInterval(counter)
+                unlock()
                 return
             }
-            let lockDuration = parseInt(countDownEl.innerText)
-            const counter = setInterval(() => {
-                if (lockDuration <= 0){
-                    clearInterval(counter)
-                    unlock()
-                    return
-                }
-                lockDuration--
-                countDownEl.innerText = lockDuration
-            }, 1000)
-        }
+            lockDuration--
+            countDownEl.innerText = lockDuration
+        }, 1000)
+    }
 
-        function unlock() {
-            document.querySelector("#lock-text").remove()
-        }
+    function unlock() {
+        document.querySelector("#lock-text").remove()
+        document.querySelector("#file-content").removeAttribute("disabled")
+        document.querySelector("#edit-submit-btn").removeAttribute("disabled")
+    }
+</script>
 
-        init()
+<% if(file.isEditable) { %>
+    <script>
+        unlock()
+    </script>
+<% } else { %>
+    <script>
+        startCountDown()
     </script>
 <% } %>
+

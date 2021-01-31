@@ -6,10 +6,42 @@
         disabled="<%= !file.isEditable %>" ><%= file.content %></textarea>
     <br />
     <% if (!file.isEditable) { %>
-    <strong> This file will be unlock after <span><%= (file.lockDuration / 1000).toFixed(0) %></span> seconds </strong>
+    <strong id="lock-text"> This file will be unlock after <span id="lock-duration"><%= (file.lockDuration / 1000).toFixed(0) %></span> seconds </strong>
     <% } %>
     <br />
     <% if (file.isEditable) { %>
         <input type="submit" value="Save" />
     <% } %>
 </form>
+
+
+<% if (!file.isEditable) { %>
+    <script>
+        function init() {
+            startCountDown()
+        }
+
+        function startCountDown() {
+            const countDownEl = document.querySelector("#lock-duration")
+            if (!countDownEl) {
+                return
+            }
+            let lockDuration = parseInt(countDownEl.innerText)
+            const counter = setInterval(() => {
+                if (lockDuration <= 0){
+                    clearInterval(counter)
+                    unlock()
+                    return
+                }
+                lockDuration--
+                countDownEl.innerText = lockDuration
+            }, 1000)
+        }
+
+        function unlock() {
+            document.querySelector("#lock-text").remove()
+        }
+
+        init()
+    </script>
+<% } %>

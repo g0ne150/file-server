@@ -18,7 +18,11 @@ class FileService {
      * @param content File content
      * @param currentUserToken current user token
      */
-    async updateFile(fileId: number, currentUserToken: string) {
+    async updateFile(
+        fileId: number,
+        currentUserToken: string | null,
+        fileContent: string
+    ) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
         if (!EditFileDTO.getIsEditable(fileDO, now, currentUserToken)) {

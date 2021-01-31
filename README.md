@@ -1,15 +1,15 @@
 ## 编辑锁实现思路
 
-实现于 [FileService.ts](./src/service/FileService.ts)
+实现于 [FileService.ts](./src/service/FileService.ts)、[FileController.ts](./src/controller/FileController.ts)
 
 -   当进入编辑页面时，检查当前时间和 latest lock time 差是否大于 60 秒，**如果大于**，则未锁定，可编辑；
     -   被编辑文件的 latest lock time 设置为当前时间，同时生成一个编辑会话 token 并写入数据库；
     -   用 cookie 返回一个 60 秒过期的，上一步骤生成编辑会话 token 标识当前编辑会话；
 -   **如果小于** 60 秒，则检查请求是否带有 token，且值与之前值一致，则锁定可编辑，否则锁定不可编辑；
 
-## 性能优化思路
+## 可优化的地方
 
--   使用 LRU 算法为文件做缓存，如果文件更新，则清除缓存
+-   使用 LRU 算法为文件内容做缓存，不用每次从文件系统读取
 
 ---
 

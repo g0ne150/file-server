@@ -1,5 +1,5 @@
-<h1>Edit file: <span><%= file.fileName %></span></h1>
-<form action="/file/update/<%= file.id %>" method="POST" title="New file">
+<h1>File name: <span><%= file.fileName %></span></h1>
+<form action="/file/edit/udpate/<%= file.id %>" method="POST" title="New file">
     <label for="file-content">File content:</label>
     <textarea
         name="file-content" id="file-content"

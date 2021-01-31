@@ -72,4 +72,14 @@ fileController.get("/edit/:id", async (ctx) => {
     await ctx.render("fileEdit")
 })
 
+fileController.post("/edit/udpate/:id", async (ctx) => {
+    const fileId = parseInt(ctx.params["id"])
+    const currentUserToken =
+        ctx.cookies.get(getEditFileUserTokenKey(fileId)) || null
+    const fileContent: string = ctx.request.body["file-content"]
+
+    await fileService.updateFile(fileId, currentUserToken, fileContent)
+    ctx.redirect(`${FILE_CONTROLLER_PREFIX}/list`)
+})
+
 export default fileController

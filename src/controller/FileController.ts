@@ -14,7 +14,7 @@ fileController.get("/download/:fileId", async (ctx) => {
     const fileId = parseInt(ctx.params["fileId"])
     const file = await fileService.queryFile(fileId)
     if (file === undefined || file === null) {
-        throw new Error("Target file not found")
+        ctx.throw(404, "Target file not found")
     }
     ctx.set({
         "Content-Type": "text/plain; charset=utf-8",

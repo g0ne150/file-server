@@ -4,6 +4,7 @@ import render from "koa-ejs"
 import path from "path"
 import "reflect-metadata"
 import { PORT } from "./config"
+import bodyParser from "koa-bodyparser"
 
 import fileController from "./controller/FileController"
 import indexController from "./controller/IndexController"
@@ -22,6 +23,8 @@ app.on("error", (err) => {
 render(app, {
     root: path.join(__dirname, "view"),
 })
+
+app.use(bodyParser())
 
 applyController(indexController)
 applyController(fileController)

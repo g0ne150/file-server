@@ -6,7 +6,7 @@ class FileService {
      * Add a new file, write file data to local file system and insert data to database
      * @param fileName File name (assume unique)
      */
-    async addFile(fileName: string) {
+    async addFile(fileName: string, fileContent: string) {
         // TODO 创建文件到本地
 
         await fileDAO.addFile(fileName)
@@ -18,7 +18,7 @@ class FileService {
      * @param content File content
      * @param currentUserToken current user token
      */
-    async saveFile(fileId: number, currentUserToken: string) {
+    async updateFile(fileId: number, currentUserToken: string) {
         const fileDO = await this.queryFile(fileId)
         const now = Date.now()
         if (!EditFileDTO.getIsEditable(fileDO, now, currentUserToken)) {

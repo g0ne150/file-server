@@ -1,7 +1,9 @@
 import Router from "@koa/router"
 import { fileService } from "../service/FileService"
 
-const fileController = new Router({ prefix: "/file" })
+export const FILE_CONTROLLER_PREFIX = "/file"
+
+const fileController = new Router({ prefix: FILE_CONTROLLER_PREFIX })
 
 fileController.get("/new", async (ctx) => {
     ctx.state.title = "New file"
@@ -9,7 +11,11 @@ fileController.get("/new", async (ctx) => {
 })
 
 fileController.post("/new/save", async (ctx) => {
-    console.log(ctx.request)
+    const fileName = ctx.request.body["file-name"]
+    const fileContent = ctx.request.body["file-content"]
+
+    await fileService.addFile(fileName, fileContent)
+    ctx.redirect(`${FILE_CONTROLLER_PREFIX}/list`)
 })
 
 fileController.get("/download/:fileId", async (ctx) => {

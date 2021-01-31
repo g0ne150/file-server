@@ -22,6 +22,7 @@ app.on("error", (err) => {
 
 render(app, {
     root: path.join(__dirname, "view"),
+    async: true,
 })
 
 app.use(bodyParser())

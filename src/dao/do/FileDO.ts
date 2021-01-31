@@ -1,4 +1,4 @@
-import { Field } from "../../util/db"
+import { Field } from "../../util/dbUtils"
 
 export default class FileDO {
     /**

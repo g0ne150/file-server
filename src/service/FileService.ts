@@ -49,18 +49,21 @@ class FileService {
     /**
      * try edit file
      * @param fileId File ID
-     * @param currentUserToken lock token
+     * @param currentUserToken Lock token
+     * @param now Current time, milliseconds
      */
-    async tryEditFile(fileId: number, currentUserToken: string) {
-        const now = Date.now()
-
+    async tryEditFile(
+        fileId: number,
+        currentUserToken: string,
+        now: number = Date.now()
+    ) {
         // Try lock
         const fileDO = await this.tryLockFile(fileId, currentUserToken, now)
         const fileDTO: EditFileDTO = { ...fileDO }
 
         // TODO 读取本地文件
         // Read file content from locl file
-        fileDTO.content = ""
+        fileDTO.content = "file content"
 
         // Confirm if the file is editable or not
         fileDTO.isEditable = EditFileDTO.getIsEditable(
@@ -92,6 +95,7 @@ class FileService {
     ) {
         let fileDO = await this.queryFile(fileId)
         if (EditFileDTO.getIsFileLocked(fileDO, now)) {
+            // try acquire lock failed
             return fileDO
         }
         await fileDAO.updateLockInfo(fileDO.id, now, lockToken)

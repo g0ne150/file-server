@@ -28,7 +28,11 @@ export default class EditFileDTO extends FileDO {
      * @param now Current time, milliseconds
      * @param currentUserToken Current user token
      */
-    static getIsEditable(file: FileDO, now: number, currentUserToken: string) {
+    static getIsEditable(
+        file: FileDO,
+        now: number,
+        currentUserToken: string | null
+    ) {
         return (
             !EditFileDTO.getIsFileLocked(file, now) ||
             EditFileDTO.getIsLockedBy(file, currentUserToken)

@@ -1,7 +1,15 @@
 import Router from "@koa/router"
+import { LOCK_DURATION } from "../config"
+import EditFileDTO from "../service/dto/EditFileDTO"
 import { fileService } from "../service/FileService"
+import { generateUserToken } from "../util/userUtils"
 
 export const FILE_CONTROLLER_PREFIX = "/file"
+
+const EDIT_FILE_USER_TOKEN_KEY = "edit-file-user-token"
+
+const getEditFileUserTokenKey = (fileId: number) =>
+    `${EDIT_FILE_USER_TOKEN_KEY}-${fileId}`
 
 const fileController = new Router({ prefix: FILE_CONTROLLER_PREFIX })
 
@@ -18,8 +26,8 @@ fileController.post("/new/save", async (ctx) => {
     ctx.redirect(`${FILE_CONTROLLER_PREFIX}/list`)
 })
 
-fileController.get("/download/:fileId", async (ctx) => {
-    const fileId = parseInt(ctx.params["fileId"])
+fileController.get("/download/:id", async (ctx) => {
+    const fileId = parseInt(ctx.params["id"])
     const file = await fileService.queryFile(fileId)
     if (file === undefined || file === null) {
         ctx.throw(404, "Target file not found")
@@ -38,6 +46,30 @@ fileController.get("/list", async (ctx) => {
         fileList: await fileService.queryAllFiles(),
     }
     await ctx.render("fileList")
+})
+
+fileController.get("/edit/:id", async (ctx) => {
+    const now = Date.now()
+    const fileId = parseInt(ctx.params["id"])
+    const tokenKey = getEditFileUserTokenKey(fileId)
+
+    const userTokenFromCookie = ctx.cookies.get(tokenKey) || null
+    const currentUserToken = userTokenFromCookie || generateUserToken()
+
+    const file = await fileService.tryEditFile(fileId, currentUserToken, now)
+
+    if (
+        userTokenFromCookie === null &&
+        EditFileDTO.getIsLockedBy(file, currentUserToken)
+    ) {
+        ctx.cookies.set(tokenKey, currentUserToken, {
+            expires: new Date(now + LOCK_DURATION),
+        })
+    }
+
+    ctx.state = { file, title: "File edit" }
+
+    await ctx.render("fileEdit")
 })
 
 export default fileController

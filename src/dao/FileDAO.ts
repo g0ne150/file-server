@@ -1,4 +1,4 @@
-import { getConnection, mapToDO } from "../util/db"
+import { getConnection, mapToDO } from "../util/dbUtils"
 import FileDO from "./do/FileDO"
 
 class FileDAO {

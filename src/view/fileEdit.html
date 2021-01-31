@@ -1,9 +1,15 @@
-<h1>Edit file: <span>{file name}</span></h1>
-<form action="/api/file/edit" method="POST" title="New file">
+<h1>Edit file: <span><%= file.fileName %></span></h1>
+<form action="/file/update/<%= file.id %>" method="POST" title="New file">
     <label for="file-content">File content:</label>
-    <textarea name="file-content" id="file-content" disabled></textarea>
+    <textarea
+        name="file-content" id="file-content"
+        disabled="<%= !file.isEditable %>" ><%= file.content %></textarea>
     <br />
-    <strong> This file will be unlock after <span>{30}</span> seconds </strong>
+    <% if (!file.isEditable) { %>
+    <strong> This file will be unlock after <span><%= (file.lockDuration / 1000).toFixed(0) %></span> seconds </strong>
+    <% } %>
     <br />
-    <input type="submit" value="Save" />
+    <% if (file.isEditable) { %>
+        <input type="submit" value="Save" />
+    <% } %>
 </form>

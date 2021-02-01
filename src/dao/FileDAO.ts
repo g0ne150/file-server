@@ -39,12 +39,14 @@ class FileDAO {
      * Update file's latest_lock_time and latest_lock_token to lock
      * @param file File id and it's data for updating
      */
-    async updateLockInfo(fileId: number, lockTime: number, lockToken: string) {
+    async updateLockInfo(
+        fileId: number,
+        lockTime: number | null,
+        lockToken: string | null
+    ) {
         const conn = await getConnection()
-        if (!fileId || !lockTime || !lockToken) {
-            throw new Error(
-                "file id or file latestLockTime or latestLockToken cannot be falsy value"
-            )
+        if (!fileId) {
+            throw new Error("file id cannot be falsy value")
         }
         conn.run(
             `update file set latest_lock_time = ?, latest_lock_token = ? where id = ?`,

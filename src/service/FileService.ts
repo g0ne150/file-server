@@ -30,6 +30,9 @@ class FileService {
             throw new Error(`File is locked for now`)
         }
         // TODO 更新本地文件内容
+
+        // Unlock file after update file
+        await this.unlockFile(fileId)
     }
 
     /**
@@ -106,6 +109,10 @@ class FileService {
         fileDO.latestLockTime = now
         fileDO.latestLockToken = lockToken
         return fileDO
+    }
+
+    async unlockFile(fileId: number) {
+        await fileDAO.updateLockInfo(fileId, null, null)
     }
 }
 

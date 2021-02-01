@@ -16,7 +16,7 @@ export const SQLITE3_DATABASE_FILE_PATH = path.join(
 /**
  * Upload file storage localtion
  */
-export const FILE_STORAGE_PATH = ""
+export const FILE_STORAGE_PATH = path.join(__dirname, "../files")
 
 /**
  * File lock duration, milliseconds

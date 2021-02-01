@@ -2,6 +2,7 @@ import Router from "@koa/router"
 import { LOCK_DURATION } from "../config"
 import EditFileDTO from "../service/dto/EditFileDTO"
 import { fileService } from "../service/FileService"
+import { fileStorageService } from "../service/FileStorageService"
 import { generateUserToken } from "../util/userUtils"
 
 export const FILE_CONTROLLER_PREFIX = "/file"
@@ -32,12 +33,18 @@ fileController.get("/download/:id", async (ctx) => {
     if (file === undefined || file === null) {
         ctx.throw(404, "Target file not found")
     }
+
+    const {
+        fileReadStream,
+        size,
+    } = await fileStorageService.getFileReadStreamAndSize(file.fileName)
     ctx.set({
         "Content-Type": "text/plain; charset=utf-8",
+        "Content-Length": size.toString(),
         "Content-Disposition": `attachment; filename="${file.fileName}"`,
     })
-    // TODO 从本地文件读取文件内容
-    ctx.body = "file content"
+
+    ctx.body = fileReadStream
 })
 
 fileController.get("/list", async (ctx) => {

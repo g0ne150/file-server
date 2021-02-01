@@ -34,7 +34,6 @@
     async function tryAcquireFileLock() {
         const renewResponse = await fetch(`/file/edit/renew-lease/${fileId}`)
         const file = await renewResponse.json()
-        console.log(file)
     }
 </script>
 

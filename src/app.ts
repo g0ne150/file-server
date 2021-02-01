@@ -16,8 +16,15 @@ const applyController = (controller: Router) => {
 const app = new Koa()
 
 // Simple error handling
-app.on("error", (err) => {
-    console.error("server error", err)
+app.use(async (ctx, next) => {
+    try {
+        await next()
+    } catch (e) {
+        console.error(e)
+        if (e instanceof Error) {
+            ctx.body = e.message
+        }
+    }
 })
 
 render(app, {

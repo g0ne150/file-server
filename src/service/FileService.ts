@@ -1,5 +1,6 @@
 import { fileDAO } from "../dao/FileDAO"
 import EditFileDTO from "./dto/EditFileDTO"
+import { fileStorageService } from "./FileStorageService"
 
 class FileService {
     /**
@@ -7,7 +8,7 @@ class FileService {
      * @param fileName File name (assume unique)
      */
     async addFile(fileName: string, fileContent: string) {
-        // TODO 创建文件到本地
+        await fileStorageService.createFile(fileName, fileContent)
 
         await fileDAO.addFile(fileName)
     }
@@ -29,7 +30,8 @@ class FileService {
             // file is locked by another user
             throw new Error(`File is locked for now`)
         }
-        // TODO 更新本地文件内容
+
+        await fileStorageService.writeFile(fileDO.fileName, fileContent)
 
         // Unlock file after update file
         await this.unlockFile(fileId)
@@ -68,9 +70,10 @@ class FileService {
         const fileDO = await this.tryLockFile(fileId, currentUserToken, now)
         const fileDTO: EditFileDTO = { ...fileDO }
 
-        // TODO 读取本地文件
         // Read file content from locl file
-        fileDTO.content = "file content"
+        fileDTO.content = await fileStorageService.readFileContent(
+            fileDTO.fileName
+        )
 
         // Confirm if the file is editable or not
         fileDTO.isEditable = EditFileDTO.getIsEditable(

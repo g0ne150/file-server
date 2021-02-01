@@ -38,6 +38,7 @@ fileController.get("/download/:id", async (ctx) => {
         fileReadStream,
         size,
     } = await fileStorageService.getFileReadStreamAndSize(file.fileName)
+
     ctx.set({
         "Content-Type": "text/plain; charset=utf-8",
         "Content-Length": size.toString(),

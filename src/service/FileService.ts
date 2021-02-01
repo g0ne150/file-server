@@ -61,13 +61,17 @@ class FileService {
      * @param currentUserToken Lock token
      * @param now Current time, milliseconds
      */
-    async tryEditFile(
+    async tryAcquireFileLock(
         fileId: number,
         currentUserToken: string,
         now: number = Date.now()
     ) {
         // Try lock
-        const fileDO = await this.tryLockFile(fileId, currentUserToken, now)
+        const { fileDO, isAcquired } = await this.tryLockFile(
+            fileId,
+            currentUserToken,
+            now
+        )
         const fileDTO: EditFileDTO = { ...fileDO }
 
         // Read file content from locl file
@@ -85,7 +89,7 @@ class FileService {
         // Set lock duration
         fileDTO.lockDuration = EditFileDTO.getLockDuration(fileDTO, now)
 
-        return fileDTO
+        return { fileDTO, isAcquired }
     }
 
     /**
@@ -104,14 +108,14 @@ class FileService {
         now: number = Date.now()
     ) {
         let fileDO = await this.queryFile(fileId)
-        if (EditFileDTO.getIsFileLocked(fileDO, now)) {
-            // try acquire lock failed
-            return fileDO
+        if (!EditFileDTO.getIsEditable(fileDO, now, lockToken)) {
+            // locked by another user, so try acquire lock fail
+            return { fileDO, isAcquired: false }
         }
         await fileDAO.updateLockInfo(fileDO.id, now, lockToken)
         fileDO.latestLockTime = now
         fileDO.latestLockToken = lockToken
-        return fileDO
+        return { fileDO, isAcquired: true }
     }
 
     async unlockFile(fileId: number) {

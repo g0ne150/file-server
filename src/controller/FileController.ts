@@ -1,4 +1,5 @@
 import Router from "@koa/router"
+import { ParameterizedContext } from "koa"
 import { LOCK_DURATION } from "../config"
 import EditFileDTO from "../service/dto/EditFileDTO"
 import { fileService } from "../service/FileService"
@@ -56,28 +57,42 @@ fileController.get("/list", async (ctx) => {
     await ctx.render("fileList")
 })
 
-fileController.get("/edit/:id", async (ctx) => {
-    const now = Date.now()
-    const fileId = parseInt(ctx.params["id"])
+const tryAcquireLock = async (
+    ctx: ParameterizedContext,
+    fileId: number,
+    now: number = Date.now()
+) => {
     const tokenKey = getEditFileUserTokenKey(fileId)
 
-    const userTokenFromCookie = ctx.cookies.get(tokenKey) || null
-    const currentUserToken = userTokenFromCookie || generateUserToken()
+    const currentUserToken = ctx.cookies.get(tokenKey) || generateUserToken()
 
-    const file = await fileService.tryEditFile(fileId, currentUserToken, now)
+    const { fileDTO, isAcquired } = await fileService.tryAcquireFileLock(
+        fileId,
+        currentUserToken,
+        now
+    )
 
-    if (
-        userTokenFromCookie === null &&
-        EditFileDTO.getIsLockedBy(file, currentUserToken)
-    ) {
+    if (isAcquired) {
         ctx.cookies.set(tokenKey, currentUserToken, {
             expires: new Date(now + LOCK_DURATION),
         })
     }
 
-    ctx.state = { file, title: "File edit" }
+    return fileDTO
+}
+
+fileController.get("/edit/:id", async (ctx) => {
+    const fileId = parseInt(ctx.params["id"])
+    ctx.state = { file: await tryAcquireLock(ctx, fileId), title: "File edit" }
 
     await ctx.render("fileEdit")
+})
+
+fileController.get("/edit/renew-lease/:id", async (ctx) => {
+    const fileId = parseInt(ctx.params["id"])
+    const file = await tryAcquireLock(ctx, fileId)
+
+    ctx.body = file
 })
 
 fileController.post("/edit/udpate/:id", async (ctx) => {

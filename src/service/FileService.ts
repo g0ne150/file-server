@@ -8,6 +8,9 @@ class FileService {
      * @param fileName File name (assume unique)
      */
     async addFile(fileName: string, fileContent: string) {
+        if (!fileName) {
+            throw new Error("File name cannot be falsy value")
+        }
         await fileStorageService.createFile(fileName, fileContent)
 
         await fileDAO.addFile(fileName)

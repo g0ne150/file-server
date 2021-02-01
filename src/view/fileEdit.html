@@ -1,36 +1,40 @@
 <h1>File name: <span><%= file.fileName %></span></h1>
-<form action="/file/edit/udpate/<%= file.id %>" method="POST" title="New file">
+<form action="/file/edit/udpate" method="POST" title="New file">
+    <input type="hidden" value="<%= file.id %>" name="file-id" id="file-id" />
     <label for="file-content">File content:</label>
     <textarea
         name="file-content" id="file-content" disabled><%= file.content %></textarea>
     <br />
-    <strong id="lock-text"> This file will be unlock after <span id="lock-duration"><%= (file.lockDuration / 1000).toFixed(0) %></span> seconds </strong>
+    <strong id="lock-text"> This file is being edited by another user for now, please try another time.</strong>
     <br />
     <input id="edit-submit-btn" type="submit" value="Save" disabled />
 </form>
 
 <script>
-    function startCountDown() {
-        const countDownEl = document.querySelector("#lock-duration")
-        if (!countDownEl) {
-            return
-        }
-        let lockDuration = parseInt(countDownEl.innerText)
-        const counter = setInterval(() => {
-            if (lockDuration <= 0){
-                clearInterval(counter)
-                unlock()
-                return
-            }
-            lockDuration--
-            countDownEl.innerText = lockDuration
-        }, 1000)
-    }
+    const fileId = document.querySelector("#file-id").value
 
+    function throttle(func, wait = 0) {
+        let latestInvokeTime = Date.now()
+        return () => {
+            const now = Date.now()
+            if (now - latestInvokeTime >= wait) {
+                latestInvokeTime = now
+                func()
+            }
+        }
+    }
     function unlock() {
         document.querySelector("#lock-text").remove()
-        document.querySelector("#file-content").removeAttribute("disabled")
         document.querySelector("#edit-submit-btn").removeAttribute("disabled")
+        const textareaEl = document.querySelector("#file-content")
+        textareaEl.removeAttribute("disabled")
+        textareaEl.addEventListener("input", throttle(tryAcquireFileLock, 30 * 1000))
+    }
+
+    async function tryAcquireFileLock() {
+        const renewResponse = await fetch(`/file/edit/renew-lease/${fileId}`)
+        const file = await renewResponse.json()
+        console.log(file)
     }
 </script>
 
@@ -40,7 +44,6 @@
     </script>
 <% } else { %>
     <script>
-        startCountDown()
     </script>
 <% } %>
 

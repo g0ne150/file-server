@@ -1,7 +1,9 @@
 ## 启动服务
 
--   `npm install`
--   `npm run start`
+1. `npm install`
+2. `npm run start`
+
+ps: 仅在 Nodejs v15.5.0 下测试通过
 
 ## 编辑锁实现思路
 

@@ -1,3 +1,8 @@
+## 启动服务
+
+-   `npm install`
+-   `npm run start`
+
 ## 编辑锁实现思路
 
 实现于 [FileService.ts](./src/service/FileService.ts)、[FileController.ts](./src/controller/FileController.ts)

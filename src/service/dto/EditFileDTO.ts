@@ -1,6 +1,7 @@
 import { LOCK_DURATION } from "../../config"
 import FileDO from "../../dao/do/FileDO"
 import { JSONData, JSONField } from "../../util/serializeUtils"
+import { copyProperities } from "../../util/typeUtils"
 
 @JSONData()
 export default class EditFileDTO extends FileDO {
@@ -10,10 +11,7 @@ export default class EditFileDTO extends FileDO {
         now: number = Date.now()
     ) {
         super()
-        this.id = fileDO.id
-        this.fileName = fileDO.fileName
-        this.latestLockTime = fileDO.latestLockTime
-        this.latestLockToken = fileDO.latestLockToken
+        copyProperities(this, fileDO)
         this.currentUserToken = currentUserToken
         this.now = now
     }

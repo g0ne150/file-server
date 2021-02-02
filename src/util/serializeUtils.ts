@@ -55,7 +55,7 @@ export const JSONData = function () {
                         delete copyOfThis[key]
                     }
                 }
-                return JSON.stringify(copyOfThis)
+                return copyOfThis
             }
         }
     }

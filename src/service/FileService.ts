@@ -28,8 +28,8 @@ class FileService {
         fileContent: string
     ) {
         const fileDO = await this.queryFile(fileId)
-        const now = Date.now()
-        if (!EditFileDTO.getIsEditable(fileDO, now, currentUserToken)) {
+        const file = new EditFileDTO(fileDO, currentUserToken)
+        if (!file.isEditable) {
             // file is locked by another user
             throw new Error(`File is locked for now`)
         }
@@ -75,7 +75,7 @@ class FileService {
             currentUserToken,
             now
         )
-        const fileDTO: EditFileDTO = { ...fileDO }
+        const fileDTO = new EditFileDTO(fileDO, currentUserToken, now)
 
         // Read file content from locl file
         fileDTO.content = await fileStorageService.readFileContent(
@@ -83,14 +83,14 @@ class FileService {
         )
 
         // Confirm if the file is editable or not
-        fileDTO.isEditable = EditFileDTO.getIsEditable(
-            fileDTO,
-            now,
-            currentUserToken
-        )
+        // fileDTO.isEditable = EditFileDTO.getIsEditable(
+        //     fileDTO,
+        //     now,
+        //     currentUserToken
+        // )
 
         // Set lock duration
-        fileDTO.lockDuration = EditFileDTO.getLockDuration(fileDTO, now)
+        // fileDTO.lockDuration = EditFileDTO.getLockDuration(fileDTO, now)
 
         return { fileDTO, isAcquired }
     }
@@ -111,7 +111,8 @@ class FileService {
         now: number = Date.now()
     ) {
         let fileDO = await this.queryFile(fileId)
-        if (!EditFileDTO.getIsEditable(fileDO, now, lockToken)) {
+        let file = new EditFileDTO(fileDO, lockToken, now)
+        if (!file.isEditable) {
             // locked by another user, so try acquire lock fail
             return { fileDO, isAcquired: false }
         }

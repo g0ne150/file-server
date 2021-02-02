@@ -11,7 +11,7 @@ class JSONSerializeMetadata {
 
 const JSON_KEY_MAP_LIST_METADATA_KEY = Symbol("json-name-list-key")
 
-// 实现 JSONField 控制 json 序列化过程
+// 实现 JSONData、JSONField 控制 json 序列化过程
 export const JSONField = function (
     params: JSONFieldParamter = {}
 ): PropertyDecorator {
@@ -46,9 +46,11 @@ export const JSONData = function () {
                         delete copyOfThis[m.properityKey]
                         return
                     }
-                    if (m.properityKey !== m.jsonKey && m.jsonKey) {
-                        delete copyOfThis[m.properityKey]
+                    if (m.jsonKey) {
                         copyOfThis[m.jsonKey] = (this as any)[m.properityKey]
+                    }
+                    if (m.jsonKey !== m.properityKey) {
+                        delete copyOfThis[m.properityKey]
                     }
                 })
                 return copyOfThis

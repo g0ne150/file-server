@@ -1,6 +1,8 @@
 import { LOCK_DURATION } from "../../config"
 import FileDO from "../../dao/do/FileDO"
+import { JSONData, JSONField } from "../../util/serializeUtils"
 
+@JSONData()
 export default class EditFileDTO extends FileDO {
     constructor(
         fileDO: FileDO,
@@ -16,8 +18,10 @@ export default class EditFileDTO extends FileDO {
         this.now = now
     }
 
+    @JSONField({ ignore: true })
     currentUserToken: string | null
 
+    @JSONField({ ignore: true })
     now: number
 
     /**

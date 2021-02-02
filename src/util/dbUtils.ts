@@ -27,7 +27,7 @@ const DB_FIELD_METADATA_KEY = Symbol("db-field-key")
  * Annotation which indictes the database table field keys on Data Objects properties
  * @param dbField Field key in database
  */
-export const Field = function (dbField: string) {
+export const Field = function (dbField: string): PropertyDecorator {
     return Reflect.metadata(DB_FIELD_METADATA_KEY, dbField)
 }
 

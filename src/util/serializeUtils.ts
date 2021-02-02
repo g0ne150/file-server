@@ -1,31 +1,33 @@
-const JSON_NAME_LIST_METADATA_KEY = Symbol("json-name-list-key")
-const JSON_IGNORE_METADATA_KEY = Symbol("jsno-ignore-key")
+type ProperityKey = string | symbol
+type JSONFieldParamter = { name?: ProperityKey; ignore?: boolean }
 
-type JSONFieldParamter = { name?: string | symbol; ignore?: boolean }
+class JSONSerializeMetadata {
+    constructor(
+        public properityKey: ProperityKey,
+        public jsonKey: ProperityKey | null = null,
+        public ignore: boolean = false
+    ) {}
+}
+
+const JSON_KEY_MAP_LIST_METADATA_KEY = Symbol("json-name-list-key")
+
 // 实现 JSONField 控制 json 序列化过程
 export const JSONField = function (
     params: JSONFieldParamter = {}
 ): PropertyDecorator {
-    return (target: any, propertyKey: string | symbol) => {
+    return (target: any, propertyKey: ProperityKey) => {
         const { name, ignore } = params
-        const nameList: (string | symbol)[] =
-            Reflect.getMetadata(JSON_NAME_LIST_METADATA_KEY, target) || []
+        const metadataList: JSONSerializeMetadata[] =
+            Reflect.getMetadata(JSON_KEY_MAP_LIST_METADATA_KEY, target) || []
+        metadataList.push(
+            new JSONSerializeMetadata(propertyKey, name || propertyKey, ignore)
+        )
 
-        if (name && name !== propertyKey) {
-            nameList.push(name)
-        } else {
-            nameList.push(propertyKey)
-        }
-        Reflect.defineMetadata(JSON_NAME_LIST_METADATA_KEY, nameList, target)
-
-        if (ignore === true) {
-            Reflect.defineMetadata(
-                JSON_IGNORE_METADATA_KEY,
-                ignore,
-                target,
-                propertyKey
-            )
-        }
+        Reflect.defineMetadata(
+            JSON_KEY_MAP_LIST_METADATA_KEY,
+            metadataList,
+            target
+        )
     }
 }
 
@@ -36,26 +38,17 @@ export const JSONData = function () {
         return class extends constructor {
             toJSON() {
                 const copyOfThis: any = { ...this }
-                const nameList:
-                    | (string | symbol)[]
-                    | undefined = Reflect.getMetadata(
-                    JSON_NAME_LIST_METADATA_KEY,
-                    this
-                )
-                // toJSON 输出 get 属性
-                nameList &&
-                    nameList.forEach((name) => {
-                        copyOfThis[name] = (this as any)[name]
-                    })
-
-                Object.keys(this).forEach((key) => {
-                    const ignore: boolean | undefined = Reflect.getMetadata(
-                        JSON_IGNORE_METADATA_KEY,
-                        this,
-                        key
-                    )
-                    if (ignore === true) {
-                        delete copyOfThis[key]
+                const metadataList: JSONSerializeMetadata[] =
+                    Reflect.getMetadata(JSON_KEY_MAP_LIST_METADATA_KEY, this) ||
+                    []
+                metadataList.forEach((m) => {
+                    if (m.ignore === true) {
+                        delete copyOfThis[m.properityKey]
+                        return
+                    }
+                    if (m.properityKey !== m.jsonKey && m.jsonKey) {
+                        delete copyOfThis[m.properityKey]
+                        copyOfThis[m.jsonKey] = (this as any)[m.properityKey]
                     }
                 })
                 return copyOfThis

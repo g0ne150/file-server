@@ -82,16 +82,6 @@ class FileService {
             fileDTO.fileName
         )
 
-        // Confirm if the file is editable or not
-        // fileDTO.isEditable = EditFileDTO.getIsEditable(
-        //     fileDTO,
-        //     now,
-        //     currentUserToken
-        // )
-
-        // Set lock duration
-        // fileDTO.lockDuration = EditFileDTO.getLockDuration(fileDTO, now)
-
         return { fileDTO, isAcquired }
     }
 

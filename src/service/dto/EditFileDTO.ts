@@ -53,6 +53,7 @@ export default class EditFileDTO extends FileDO {
      * If file is locked, file will be unlocked after lock duration,
      * milliseconds
      */
+    @JSONField()
     get lockDuration(): number | null {
         if (this.latestLockTime === null || !this.isFileLocked) {
             return null
